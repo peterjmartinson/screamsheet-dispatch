@@ -13,7 +13,7 @@ This document describes the technical approach for the `screamsheet-dispatch` sy
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Workload type | Single-process Python script, cron-invoked | No concurrency needed at initial scale; simpler to debug and audit than a queue or daemon |
-| Generator invocation | Subprocess call to `uv run screamsheet --config <path>` | Keeps repos decoupled; dispatch doesn't import screamsheet internals |
+| Generator invocation | Subprocess call to `uv run screamsheet-service --config <path>` | Separate entry point keeps subscriber-service invocation isolated from personal-use `uv run screamsheet`; no risk to existing personal flow |
 | Subscriber config storage | GUID-named YAML files in a local clone of a private GitHub repo | Three-tier replication (Google Sheet → local clone → GitHub); offsite backup on every sync run; no subscriber data lives inside the dispatch code repo |
 | Subscriber source of truth | Google Sheets via Google Sheets API | Already chosen as the subscriber intake mechanism |
 | Delivery | Python `smtplib` via Hostinger SMTP relay | Simple, no external dependencies; credentials stored in environment variables |
@@ -24,6 +24,7 @@ This document describes the technical approach for the `screamsheet-dispatch` sy
 | Team identification in subscriber configs | Store canonical team names only — no numeric IDs | IDs are generator-domain knowledge; dispatch and the signup form only deal in human-readable names; the generator resolves names to IDs via its own SQLite tables |
 | `uv` invocation in cron | Call `uv` directly by name — no absolute path needed | `uv` is on the server PATH and available in the cron environment |
 | Git auth for config store push | SSH — key already configured on server | Git identity, SSH key, and remote are all set up; `git commit` and `git push` work without additional configuration |
+| Zero-PDF subscriber | Skip delivery, log failure, alert admin | Sending a blank email is confusing to the subscriber; skipping with an alert is the correct "send what we have" behaviour when we have nothing to send |
 
 ---
 
@@ -63,7 +64,7 @@ If the `git push` fails, the failure is logged as a warning but the run continue
 For each subscriber config file, dispatch calls:
 
 ```
-uv run screamsheet --config <path-to-subscriber-yaml> --output-dir <outbox/{date}/{guid}/>
+uv run screamsheet-service --config <path-to-subscriber-yaml> --output-dir <outbox/{date}/{guid}/>
 ```
 
 The generator writes PDFs to `output_dir` and prints a JSON-serialized `list[GenerationResult]` to stdout. Dispatch reads stdout, parses the results, and records any layout warnings in the run log. If the subprocess exits non-zero or stdout cannot be parsed, that subscriber is marked as a generation failure.
