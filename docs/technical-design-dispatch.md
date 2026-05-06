@@ -21,6 +21,7 @@ This document describes the technical approach for the `screamsheet-dispatch` sy
 | Run log | Plain text log file per run, plus end-of-run summary email | Log files provide permanent audit trail; summary email gives immediate visibility |
 | Configuration | Single YAML config file (`dispatch_config.yaml`) | All tunable values in one place; no magic numbers in code |
 | Rate limiting | Configurable per-email delay (sleep between sends) | Simple and effective at initial scale; avoids Hostinger SMTP quota |
+| Team identification in subscriber configs | Store canonical team names only — no numeric IDs | IDs are generator-domain knowledge; dispatch and the signup form only deal in human-readable names; the generator resolves names to IDs via its own SQLite tables |
 
 ---
 
@@ -206,7 +207,7 @@ delivery_log:
 - **Google Sheets API** — OAuth2 service account credentials; reads one sheet (subscriber list). Dispatch does not write to the sheet.
 - **`screamsheet` generator** — invoked as a `uv run` subprocess; communicates via the CLI contract defined above. No Python imports between repos.
 - **Hostinger SMTP** — `smtplib.SMTP_SSL`; credentials via environment variables.
-- **Git** — `subprocess` calls to `git add` and `git commit` in the config store directory. Git must be installed on the host and the config store directory must be a git repo.
+- **Git** — `subprocess` calls to `git add`, `git commit`, and `git push` in the config store directory. Git must be installed on the host, the config store directory must be a git repo, and push credentials (SSH key or personal access token) must be configured for the private GitHub remote.
 
 ---
 
@@ -219,3 +220,9 @@ delivery_log:
 3. **Config store git identity and push credentials** — The daily git commit+push needs a git user name, email, and push credentials configured on the server (SSH key or personal access token for the private GitHub repo). These are deployment prerequisites — does a git identity already exist on the server, and what auth method will be used for GitHub push?
 
 4. **Hostinger SMTP rate limit** — The exact per-hour or per-day send limit for the Hostinger account is not yet known. The `send_delay_seconds` config knob handles this, but the right default value needs to be determined before going live.
+
+---
+
+## Out of Scope
+
+- **Subscriber weather opt-in** — Weather on subscriber news sheets is suppressed for this release (`include_weather: false` in subscriber config). Enabling per-subscriber weather requires a geocoding integration to resolve city/state → lat/lon, which is deferred to a near-future update. When implemented, the signup form will collect city/state, dispatch will resolve coordinates via a geocoding API at sync time, and store them in the subscriber config for the generator to consume.
