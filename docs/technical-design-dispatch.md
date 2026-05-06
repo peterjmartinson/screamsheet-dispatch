@@ -22,6 +22,8 @@ This document describes the technical approach for the `screamsheet-dispatch` sy
 | Configuration | Single YAML config file (`dispatch_config.yaml`) | All tunable values in one place; no magic numbers in code |
 | Rate limiting | Configurable per-email delay (sleep between sends) | Simple and effective at initial scale; avoids Hostinger SMTP quota |
 | Team identification in subscriber configs | Store canonical team names only — no numeric IDs | IDs are generator-domain knowledge; dispatch and the signup form only deal in human-readable names; the generator resolves names to IDs via its own SQLite tables |
+| `uv` invocation in cron | Call `uv` directly by name — no absolute path needed | `uv` is on the server PATH and available in the cron environment |
+| Git auth for config store push | SSH — key already configured on server | Git identity, SSH key, and remote are all set up; `git commit` and `git push` work without additional configuration |
 
 ---
 
@@ -215,11 +217,7 @@ delivery_log:
 
 1. **Google Sheets service account setup** — Where is the service account JSON key stored, and how is it provisioned on the Linux server? This is a deployment question but affects the `credentials_file` config path. Needs to be answered before implementation.
 
-2. **`uv` availability in cron context** — Cron jobs run with a minimal `PATH`. Does `uv` need to be specified by absolute path in the cron entry, or will the environment be set up to include it? Affects how the entry-point script is invoked.
-
-3. **Config store git identity and push credentials** — The daily git commit+push needs a git user name, email, and push credentials configured on the server (SSH key or personal access token for the private GitHub repo). These are deployment prerequisites — does a git identity already exist on the server, and what auth method will be used for GitHub push?
-
-4. **Hostinger SMTP rate limit** — The exact per-hour or per-day send limit for the Hostinger account is not yet known. The `send_delay_seconds` config knob handles this, but the right default value needs to be determined before going live.
+2. **Hostinger SMTP rate limit** — The exact per-hour or per-day send limit for the Hostinger account is not yet known. The `send_delay_seconds` config knob handles this, but the right default value needs to be determined before going live.
 
 ---
 
