@@ -1,0 +1,22 @@
+smtp:
+  # SMTP credentials are read from environment variables:
+  #   DISPATCH_SMTP_HOST  — e.g. smtp.hostinger.com
+  #   DISPATCH_SMTP_USER  — e.g. peter@distractedfortune.com
+  #   DISPATCH_SMTP_PASSWORD — your SMTP password
+  port: 465
+  from_address: peter@distractedfortune.com
+  send_delay_seconds: 2.0
+
+admin:
+  alert_email: peter@distractedfortune.com
+
+google_sheets:
+  spreadsheet_id: YOUR_SPREADSHEET_ID
+  credentials_file: /home/peter/Data/dispatch-credentials.json
+
+paths:
+  config_store: /home/peter/Data/screamsheet-configs/
+  outbox: /home/peter/Data/screamsheet-outbox/
+
+retention:
+  outbox_days: 7
