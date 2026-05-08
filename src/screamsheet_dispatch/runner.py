@@ -5,7 +5,7 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ def run_for_subscriber(
     guid: str,
     config_yaml_path: Path,
     output_dir: Path,
+    screamsheet_dir: Optional[Path] = None,
 ) -> List[dict]:
     """Invoke ``screamsheet-service`` for one subscriber and return parsed results.
 
@@ -29,16 +30,13 @@ def run_for_subscriber(
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    cmd = ["uv"]
+    if screamsheet_dir is not None:
+        cmd += ["--directory", str(screamsheet_dir)]
+    cmd += ["run", "screamsheet-service", "--config", str(config_yaml_path), "--output-dir", str(output_dir)]
+
     result = subprocess.run(
-        [
-            "uv",
-            "run",
-            "screamsheet-service",
-            "--config",
-            str(config_yaml_path),
-            "--output-dir",
-            str(output_dir),
-        ],
+        cmd,
         capture_output=True,
         text=True,
     )

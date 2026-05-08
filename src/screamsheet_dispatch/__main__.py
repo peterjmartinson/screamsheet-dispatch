@@ -62,7 +62,8 @@ def main() -> None:
         name = subscriber.get("name", guid)
 
         # Generate
-        results = run_for_subscriber(guid, config_file, subscriber_outbox)
+        screamsheet_dir = Path(config.paths.screamsheet_dir) if config.paths.screamsheet_dir else None
+        results = run_for_subscriber(guid, config_file, subscriber_outbox, screamsheet_dir=screamsheet_dir)
         if not results:
             run_log_lines.append(
                 f"  {guid} ({name}): generation FAILED — no PDFs produced; skipping delivery"

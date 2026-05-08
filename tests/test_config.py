@@ -71,15 +71,19 @@ class TestLoadDispatchConfigErrors:
         with pytest.raises(FileNotFoundError):
             load_dispatch_config(tmp_path / "nonexistent.yaml")
 
-    def test_raises_environment_error_for_missing_smtp_host(self, tmp_path):
+    def test_raises_environment_error_for_missing_smtp_host(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("DISPATCH_SMTP_HOST", raising=False)
+        monkeypatch.delenv("DISPATCH_SMTP_USER", raising=False)
+        monkeypatch.delenv("DISPATCH_SMTP_PASSWORD", raising=False)
         cfg_path = tmp_path / "dispatch_config.yaml"
         cfg_path.write_text(yaml.dump({"smtp": {}}), encoding="utf-8")
-        # No env vars set
         with pytest.raises(EnvironmentError, match="DISPATCH_SMTP_HOST"):
             load_dispatch_config(cfg_path)
 
     def test_raises_environment_error_for_missing_smtp_user(self, tmp_path, monkeypatch):
         monkeypatch.setenv("DISPATCH_SMTP_HOST", "smtp.example.com")
+        monkeypatch.delenv("DISPATCH_SMTP_USER", raising=False)
+        monkeypatch.delenv("DISPATCH_SMTP_PASSWORD", raising=False)
         cfg_path = tmp_path / "dispatch_config.yaml"
         cfg_path.write_text(yaml.dump({"smtp": {}}), encoding="utf-8")
         with pytest.raises(EnvironmentError, match="DISPATCH_SMTP_USER"):
@@ -88,6 +92,7 @@ class TestLoadDispatchConfigErrors:
     def test_raises_environment_error_for_missing_smtp_password(self, tmp_path, monkeypatch):
         monkeypatch.setenv("DISPATCH_SMTP_HOST", "smtp.example.com")
         monkeypatch.setenv("DISPATCH_SMTP_USER", "user@example.com")
+        monkeypatch.delenv("DISPATCH_SMTP_PASSWORD", raising=False)
         cfg_path = tmp_path / "dispatch_config.yaml"
         cfg_path.write_text(yaml.dump({"smtp": {}}), encoding="utf-8")
         with pytest.raises(EnvironmentError, match="DISPATCH_SMTP_PASSWORD"):

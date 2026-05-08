@@ -8,15 +8,15 @@ smtp:
   send_delay_seconds: 2.0
 
 admin:
-  alert_email: peter@distractedfortune.com
+  alert_email: peter.j.martinson@gmail.com
 
 google_sheets:
   spreadsheet_id: YOUR_SPREADSHEET_ID
   credentials_file: /home/peter/Data/dispatch-credentials.json
 
 paths:
-  config_store: /home/peter/Data/screamsheet-configs/
-  outbox: /home/peter/Data/screamsheet-outbox/
+  config_store: /home/peter/Code/screamsheet-subscribers/
+  outbox: /home/peter/OUTBOX/
   screamsheet_dir: /home/peter/Code/screamsheet
 
 retention:

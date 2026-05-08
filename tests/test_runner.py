@@ -67,6 +67,30 @@ class TestRunForSubscriber:
         assert "uv" in call_args
         assert "screamsheet-service" in call_args
 
+    def test_passes_directory_flag_when_screamsheet_dir_provided(self, tmp_path):
+        screamsheet_dir = tmp_path / "screamsheet"
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "[]"
+
+        with patch("screamsheet_dispatch.runner.subprocess.run", return_value=mock_result) as mock_run:
+            run_for_subscriber("g1", tmp_path / "g1.yaml", tmp_path / "out", screamsheet_dir=screamsheet_dir)
+
+        call_args = mock_run.call_args[0][0]
+        assert "--directory" in call_args
+        assert str(screamsheet_dir) in call_args
+
+    def test_omits_directory_flag_when_screamsheet_dir_not_provided(self, tmp_path):
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "[]"
+
+        with patch("screamsheet_dispatch.runner.subprocess.run", return_value=mock_result) as mock_run:
+            run_for_subscriber("g1", tmp_path / "g1.yaml", tmp_path / "out")
+
+        call_args = mock_run.call_args[0][0]
+        assert "--directory" not in call_args
+
     def test_passes_config_path_to_generator(self, tmp_path):
         config_path = tmp_path / "g1.yaml"
         mock_result = MagicMock()

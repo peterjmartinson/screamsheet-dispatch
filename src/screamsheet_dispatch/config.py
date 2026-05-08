@@ -41,6 +41,7 @@ class PathsConfig:
     """Filesystem paths used by the dispatcher."""
     config_store: str
     outbox: str
+    screamsheet_dir: str = ""
 
 
 @dataclass
@@ -113,6 +114,7 @@ def load_dispatch_config(path: Path) -> DispatchConfig:
     paths = PathsConfig(
         config_store=str(paths_raw.get("config_store", "")),
         outbox=str(paths_raw.get("outbox", "")),
+        screamsheet_dir=str(paths_raw.get("screamsheet_dir", "")),
     )
 
     retention_raw = raw.get("retention", {})
